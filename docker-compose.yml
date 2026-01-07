@@ -1,0 +1,50 @@
+services:
+  zmk:
+    image: zmkfirmware/zmk-build-arm:stable
+    container_name: zmk-local-builder
+    volumes:
+      - .:/workspace/config
+      - zmk-workspace:/workspace/zmk
+      - ./firmware:/workspace/firmware
+    working_dir: /workspace/zmk
+    command: 
+      - /bin/bash
+      - -c
+      - |
+        echo "Starting ZMK Builder setup..."
+        if [ ! -d ".west" ]; then
+          echo "Initializing ZMK workspace (fresh)..."
+          # Initialize standard ZMK workspace
+          west init -m https://github.com/zmkfirmware/zmk --mr main --mf app/west.yml . || echo "WARNING: west init failed"
+          
+          echo "Running west update..."
+          west update || echo "WARNING: west update failed"
+          
+          echo "Running west zephyr-export..."
+          west zephyr-export || echo "WARNING: west zephyr-export failed"
+        else
+          echo "West workspace already exists."
+        fi
+
+        # Create aliases for easy building
+        # We explicitly set BOARD_ROOT to find the shield definitions in /workspace/config/boards
+        # We set ZMK_CONFIG to /workspace/config/config where the .conf and .keymap files are
+        # We also ensure we build from the app directory
+        
+        echo 'alias build_right="west build -s /workspace/zmk/zmk/app -d /workspace/zmk/build/right -b nice_nano -- -DSHIELD=charybdis_right -DZMK_CONFIG=/workspace/config/config -DBOARD_ROOT=/workspace/config && cp /workspace/zmk/build/right/zephyr/zmk.uf2 /workspace/firmware/charybdis_right.uf2 && echo Build Saved"' >> ~/.bashrc
+        
+        echo 'alias build_left="west build -s /workspace/zmk/zmk/app -d /workspace/zmk/build/left -b nice_nano -- -DSHIELD=charybdis_left -DZMK_CONFIG=/workspace/config/config -DBOARD_ROOT=/workspace/config && cp /workspace/zmk/build/left/zephyr/zmk.uf2 /workspace/firmware/charybdis_left.uf2 && echo Build Saved"' >> ~/.bashrc
+        
+        echo 'alias build_reset="west build -s /workspace/zmk/zmk/app -d /workspace/zmk/build/reset -b nice_nano -- -DSHIELD=settings_reset -DZMK_CONFIG=/workspace/config/config -DBOARD_ROOT=/workspace/config && cp /workspace/zmk/build/reset/zephyr/zmk.uf2 /workspace/firmware/settings_reset.uf2 && echo Build Saved"' >> ~/.bashrc
+        
+        echo "---------------------------------------------------"
+        echo "ZMK Builder is Ready!"
+        echo "Use 'docker compose exec -it zmk bash' to enter."
+        echo "Then use aliases: build_right, build_left, build_reset"
+        echo "---------------------------------------------------"
+        
+        # Keep container running indefinitely
+        tail -f /dev/null
+
+volumes:
+  zmk-workspace:
