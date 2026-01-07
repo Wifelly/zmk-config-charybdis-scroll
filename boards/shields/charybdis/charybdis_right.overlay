@@ -50,6 +50,14 @@
         spi-max-frequency = <2000000>;
         motion-gpios = <&gpio0 6 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
 
+        zephyr,axis-x { 
+            input-rel = <0x00>; 
+        };
+        zephyr,axis-y { 
+            input-rel = <0x01>; 
+            input-invert;
+        };
+
         /*   optional features   */
         snipe-layers = <4>;
         scroll-layers = <5>;
