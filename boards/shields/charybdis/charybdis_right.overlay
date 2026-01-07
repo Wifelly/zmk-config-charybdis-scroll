@@ -50,6 +50,18 @@
         spi-max-frequency = <2000000>;
         motion-gpios = <&gpio0 6 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
 
+        /* Optional: Enable smart power/run mode */
+        /* smart-dep; */
+
+        /* Required by Zephyr PMW3610 driver */
+        zephyr,axis-x { 
+            input-rel = <INPUT_REL_X>; 
+        };
+        zephyr,axis-y { 
+            input-rel = <INPUT_REL_Y>; 
+            input-invert; /* Invert Y axis if needed */
+        };
+
         /*   optional features   */
         snipe-layers = <4>;
         scroll-layers = <5>;
@@ -62,12 +74,4 @@
     compatible = "zmk,input-listener";
     device = <&trackball>;
   };
-};
-
-&trackball {
-    x-input {
-        compatible = "zmk,input-processor-temp-layer";
-        layer-id = <4>;
-        input-processors = <&zip_temp_layer>;
-    };
 };
