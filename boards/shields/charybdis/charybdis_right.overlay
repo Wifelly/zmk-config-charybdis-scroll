@@ -54,7 +54,7 @@
         zephyr,axis-y = <INPUT_REL_Y>;
         invert-x;
         invert-y;
-        res-cpi = <1600>;
+        res-cpi = <800>;
         smart-mode;
 
         /*   optional features   */
